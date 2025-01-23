@@ -1,0 +1,22 @@
+<div class="holy-grail-flexbox">
+    <header class="header">Header</header>
+
+    <main class="main-content">
+      <%= turbo_frame_tag "widget-1", src: traditional_widget_path(id: 1), loading: :lazy do %>
+        Loading...
+      <% end %>
+    </main>
+
+    <section class="left-sidebar">
+      <%= turbo_frame_tag "widget-2", src: traditional_widget_path(id: 2), loading: :lazy do %>
+        Loading...
+      <% end %>
+    </section>
+
+    <aside class="right-sidebar">
+      <%= turbo_frame_tag "widget-3", src: traditional_widget_path(id: 3), loading: :lazy do %>
+        Loading...
+      <% end %>
+    </aside>
+    <footer class="footer">Footer</footer>
+</div>

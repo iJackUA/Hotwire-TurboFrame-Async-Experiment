@@ -54,6 +54,10 @@ end
 group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
+  # Ruby's bikeshed-proof linter and formatter [https://github.com/standardrb/standard]
+  gem "standard", "~> 1.44", require: false
+  # Standard extension for Rails
+  gem "standard-rails"
 end
 
 group :test do

@@ -1,24 +1,5 @@
-# README
+# Async data loader and render for Hotwire [EXPERIMENT]
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+# TODO/IDEAS:
 
-Things you may want to cover:
-
-* Ruby version
-
-* System dependencies
-
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+- Use https://github.com/shopify/toxiproxy to simulate real latency for widgets data
