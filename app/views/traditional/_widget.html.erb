@@ -1,3 +1,3 @@
 <%= turbo_frame_tag "widget-#{id}" do %>
-  <table border="1"><tr><td>Widget #<%= id %></td></tr></table>
+  <table border="1"><tr><td>Widget #<%= id %>: <%= data.inspect %></td></tr></table>
 <% end %>

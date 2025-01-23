@@ -395,6 +395,7 @@ DEPENDENCIES
   bootsnap
   brakeman
   capybara
+  concurrent-ruby
   debug
   importmap-rails
   jbuilder
