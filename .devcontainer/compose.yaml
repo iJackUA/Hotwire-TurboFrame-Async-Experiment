@@ -1,4 +1,4 @@
-name: "async_component"
+name: "turbo_frame_async"
 
 services:
   rails-app:
@@ -24,4 +24,4 @@ services:
     image: selenium/standalone-chromium
     restart: unless-stopped
 
-  
+
