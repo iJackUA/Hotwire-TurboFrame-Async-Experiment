@@ -3,9 +3,10 @@ class TraditionalController < ApplicationController
   end
 
   def widget
-    data = {hello: "world"}
+    sleeptime = params[:sleep]&.to_i || 2
+    data = {sleeptime: sleeptime}
     # simulate long response
-    sleep 2
+    sleep sleeptime
     render partial: "traditional/widget", locals: {id: params[:id], data: data}
   end
 end
