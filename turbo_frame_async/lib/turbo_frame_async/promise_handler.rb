@@ -75,11 +75,12 @@ module TurboFrameAsync
       Concurrent::Promises
         .zip(*promises)
         .then_on(TurboFrameAsync.configuration.executor) { |*values| broadcast_success(values) }
-        .rescue_on(TurboFrameAsync.configuration.executor) { |error| Rails.logger.error("Promise rejected with error: #{error.inspect}") && broadcast_failure(error) }
+        .rescue_on(TurboFrameAsync.configuration.executor) do |error|
+          Rails.error.report(error)
+          broadcast_failure(error)
+        end
     rescue StandardError => e
-      Rails.logger.error("PromiseHandler error: #{e.message}")
-      Rails.logger.error(e.backtrace.join("\n"))
-
+      Rails.error.report(e)
       broadcast_failure(e)
     end
 

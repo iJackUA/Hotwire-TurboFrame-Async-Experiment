@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "concurrent"
-require "concurrent-edge"
 require "turbo-rails"
 require "turbo_frame_async/version"
 require "turbo_frame_async/configuration"

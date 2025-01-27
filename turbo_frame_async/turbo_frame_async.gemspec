@@ -5,7 +5,7 @@ require_relative "lib/turbo_frame_async/version"
 Gem::Specification.new do |spec|
   spec.name = "turbo_frame_async"
   spec.version = TurboFrameAsync::VERSION
-  spec.authors = ["Your Name"]
+  spec.authors = ["Oleg Chuev", "Yevhen Kuzminov"]
   spec.email = ["your.email@example.com"]
 
   spec.summary = "Async loading capability for Turbo Frames"
