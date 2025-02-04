@@ -43,6 +43,9 @@ gem "thruster", require: false
 # Provide Concurrency abstractions like Promises
 gem "concurrent-ruby", require: "concurrent"
 
+# Local testing of turbo_frame_async gem
+gem "turbo_frame_async", path: "./turbo_frame_async"
+
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[mri windows], require: "debug/prelude"
