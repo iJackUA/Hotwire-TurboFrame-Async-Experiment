@@ -13,7 +13,6 @@ Rails.application.routes.draw do
   get "traditional/widget/:id", to: "traditional#widget", as: :traditional_widget
 
   get "async", to: "async#index"
-  get "async/widget/:id", to: "async#widget", as: :async_widget
 
   get "async_with_block", to: "async_with_block#index"
 end

@@ -7,7 +7,7 @@ class AsyncWithBlockController < ApplicationController
     data1 = async_execute {
       sleep sleeptime1
       {data1: "world1", sleeptime: sleeptime1}
-     }
+    }
 
     sleeptime2 = 1
     data2 = async_execute {

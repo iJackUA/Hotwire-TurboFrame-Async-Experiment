@@ -26,11 +26,4 @@ class AsyncController < ApplicationController
 
     render :index, locals: {id: params[:id], data1:, data2:, data3:, data4:}
   end
-
-  def widget
-    data = {hello: "world"}
-    # simulate long response
-    sleep 2
-    render partial: "traditional/widget", locals: {id: params[:id], data: data}
-  end
 end

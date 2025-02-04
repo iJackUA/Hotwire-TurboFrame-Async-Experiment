@@ -3,61 +3,44 @@
 module TurboFrameAsync
   # Configuration class for TurboFrameAsync gem that handles async operations settings.
   # Provides configuration options for the executor that processes async promises.
-  #
-  # @since 0.1.0
-  # @example Configure custom executor
-  #   TurboFrameAsync.configure do |config|
-  #     config.executor = Concurrent::ThreadPoolExecutor.new(max_threads: 10)
-  #   end
-  # @example Use default configuration
-  #   # No configuration needed, uses default executor
-  #   TurboFrameAsync.configuration.executor
   class Configuration
-    # Default minimum number of threads in the executor pool
-    # @api private
-    DEFAULT_MIN_THREADS = 0
-
-    # Default maximum number of threads in the executor pool
-    # @api private
-    DEFAULT_MAX_THREADS = 5
-
-    # Default maximum size of the task queue
-    # @api private
-    DEFAULT_MAX_QUEUE = 100
-
-    # Default policy for handling tasks when queue is full
-    # @api private
-    DEFAULT_FALLBACK_POLICY = :caller_runs
+    # Dafault defaults
+    DEFAULT_EXECUTOR_OPTIONS = {
+      min_threads: 1,
+      max_threads: 5,
+      max_queue: 100,
+      fallback_policy: :caller_runs
+    }
 
     # The executor instance used for handling concurrent promises
-    # @return [Concurrent::ThreadPoolExecutor] The configured executor instance
-    # @example Set custom executor
-    #   config.executor = Concurrent::ThreadPoolExecutor.new(max_threads: 10)
-    attr_accessor :executor
+    attr_writer :executor
 
-    # Initializes a new Configuration instance with default settings.
-    # Creates a default executor if none is provided.
-    #
-    # @return [Configuration] A new configuration instance
-    # @see #build_default_executor
+    # Config for default Concurrent::ThreadPoolExecutor
+    attr_writer :default_executor_options
+
     def initialize
-      @executor = build_default_executor
+      @default_executor_options = {}
+    end
+
+    def wrapping_executor(executor)
+      RailsWrappingExecutor.new(executor)
+    end
+
+    def executor
+      @executor ||= wrapping_executor(default_executor)
     end
 
     private
 
     # Builds the default executor with predefined settings.
     # Uses ThreadPoolExecutor for better thread management and fallback handling.
+    # https://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/ThreadPoolExecutor.html
     #
     # @return [Concurrent::ThreadPoolExecutor] A new executor instance with default settings
     # @api private
-    def build_default_executor
-      Concurrent::ThreadPoolExecutor.new(
-        min_threads: DEFAULT_MIN_THREADS,
-        max_threads: DEFAULT_MAX_THREADS,
-        max_queue: DEFAULT_MAX_QUEUE,
-        fallback_policy: DEFAULT_FALLBACK_POLICY
-      )
+    def default_executor
+      opts = DEFAULT_EXECUTOR_OPTIONS.merge(@default_executor_options)
+      Concurrent::ThreadPoolExecutor.new(opts)
     end
   end
 
@@ -73,19 +56,6 @@ module TurboFrameAsync
 
     # Configures the gem using a block.
     # Yields the current configuration instance for modification.
-    #
-    # @yield [config] Configuration instance
-    # @yieldparam config [Configuration] The configuration instance to modify
-    # @return [void]
-    # @example Configure custom executor
-    #   TurboFrameAsync.configure do |config|
-    #     config.executor = Concurrent::ThreadPoolExecutor.new(
-    #       min_threads: 1,
-    #       max_threads: 10,
-    #       max_queue: 50,
-    #       fallback_policy: :caller_runs
-    #     )
-    #   end
     def configure
       yield(configuration)
     end
