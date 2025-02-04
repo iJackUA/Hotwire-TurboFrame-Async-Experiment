@@ -70,14 +70,22 @@ module TurboFrameAsync
     # @api private
     def handle_promises(promises)
       return if promises.empty?
+      executor = TurboFrameAsync.configuration.executor
 
       # Wait promises
       Concurrent::Promises
-        .zip(*promises)
-        .then_on(TurboFrameAsync.configuration.executor) { |*values| broadcast_success(values) }
-        .rescue_on(TurboFrameAsync.configuration.executor) do |error|
-          Rails.error.report(error)
-          broadcast_failure(error)
+        .zip_futures_on(executor, *promises)
+        .then_on(executor) { |*values| broadcast_success(values) }
+        .rescue_on(executor) do
+          # for some reasons zipped future does not inject any error object into rescue/rescue_on block
+          # so we need to iterate through promises and find out the reasons of their failure
+          errors = promises.filter(&:rejected?)&.map(&:reason)
+
+          errors.each do |error|
+            Rails.error.report(error)
+          end
+
+          broadcast_failure(errors)
         end
     rescue => e
       Rails.error.report(e)
@@ -128,13 +136,13 @@ module TurboFrameAsync
 
     # Broadcasts failure content to the Turbo Stream
     #
-    # @param error [StandardError] The error from rejected promise
+    # @param errors [StandardError] The error from rejected promise
     # @return [void]
     # @api private
-    def broadcast_failure(error)
+    def broadcast_failure(errors)
       return unless @blocks[:failure]
 
-      html_content = render_block(@blocks[:failure], error)
+      html_content = render_block(@blocks[:failure], errors)
       broadcast_content(html_content)
     end
 

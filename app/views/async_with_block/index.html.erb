@@ -19,9 +19,9 @@
         <div class="loading">
           <span>Loading Widget...</span>
         </div>
-      <% end.on_failure do |error| %>
+      <% end.on_failure do |errors| %>
         <div class="error">
-          Something went wrong: <%= error.to_s %>
+          Something went wrong: <%= errors.to_s %>
         </div>
       <% end %>
     </main>
@@ -35,9 +35,9 @@
         <div class="loading">
           <span>Loading Widget with custom error...</span>
         </div>
-      <% end.on_failure do |error| %>
+      <% end.on_failure do |errors| %>
         <div class="error">
-          Something went wrong: <%= error.to_s %>
+          Something went wrong: <%= errors.to_s %>
         </div>
       <% end %>
     </aside>
