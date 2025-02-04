@@ -18,7 +18,6 @@ class AsyncWithBlockController < ApplicationController
     sleeptime3 = 3
     data3 = async_execute do
       sleep sleeptime3
-      # TODO: Need to figure oute why error is not tracked
       raise StandardError.new("Custom error message")
       {data3: "world3", sleeptime: sleeptime3}
     end
