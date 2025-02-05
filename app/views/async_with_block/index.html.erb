@@ -10,43 +10,35 @@
     <main class="main-content">
       <p> Custom `loading`, `success` msgs </p>
 
-      <%= turbo_frame_tag_async "widget1", data1, data2 do |async_tag| %>
-        <% async_tag.on_loading do %>
-          <div class="loading">
-            <span>Loading Widget...</span>
-          </div>
-        <% end %>
-
-        <% async_tag.on_success do |d1, d2| %>
-          <div class="success">
-            Data 1: <%= d1 %>
-            Data 2: <%= d2 %>
-          </div>
-        <% end %>
-
-        <% async_tag.on_failure do |error| %>
-          <div class="error">
-            Something went wrong: <%= error.to_s %>
-          </div>
-        <% end %>
+      <%= turbo_frame_tag_async "widget1", data1, data2 do |d1, d2| %>
+        <div class="success">
+          Data 1: <%= d1 %>
+          Data 2: <%= d2 %>
+        </div>
+      <% end.on_loading do %>
+        <div class="loading">
+          <span>Loading Widget...</span>
+        </div>
+      <% end.on_failure do |errors| %>
+        <div class="error">
+          Something went wrong: <%= errors.to_s %>
+        </div>
       <% end %>
     </main>
 
     <aside class="right-sidebar">
       <p> Custom `loading`, `failure` msgs </p>
 
-      <%= turbo_frame_tag_async "widget3", data2, data3 do |async_tag| %>
-        <% async_tag.on_loading do %>
-          <div class="loading">
-            <span>Loading Widget with custom error...</span>
-          </div>
-        <% end %>
-
-        <% async_tag.on_failure do |error| %>
-          <div class="error">
-            Something went wrong: <%= error.class %>
-          </div>
-        <% end %>
+      <%= turbo_frame_tag_async "widget3", data2, data3 do |d2, d3| %>
+        You should not see this text. Block should fail!
+      <% end.on_loading do %>
+        <div class="loading">
+          <span>Loading Widget with custom error...</span>
+        </div>
+      <% end.on_failure do |errors| %>
+        <div class="error">
+          Something went wrong: <%= errors.to_s %>
+        </div>
       <% end %>
     </aside>
 

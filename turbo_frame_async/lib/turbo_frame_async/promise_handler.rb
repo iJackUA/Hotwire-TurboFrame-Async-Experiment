@@ -12,17 +12,23 @@ module TurboFrameAsync
     include ActionView::Helpers::TagHelper
     include ActionView::Context
 
+    # Size of the random hex string used for generating unique async tag IDs
+    # @api private
+    HEX_SIZE = 6
+
     # Initializes a new PromiseHandler instance
     #
     # @param dom_id [String] The DOM ID of the target Turbo Frame element
-    # @param async_tag_id [String] The unique identifier for the async tag
     # @param view_context [ActionView::Base] The view context for rendering templates
     # @api private
-    def initialize(dom_id, async_tag_id, view_context = nil)
+    def initialize(dom_id, view_context = nil)
       @dom_id = dom_id
-      @async_tag_id = async_tag_id
       @view_context = view_context
       @blocks = default_blocks
+    end
+
+    def async_tag_id
+      @async_tag_id ||= "async_tag_#{SecureRandom.hex(HEX_SIZE)}"
     end
 
     # Sets the loading state content block
@@ -35,19 +41,7 @@ module TurboFrameAsync
     #   end
     def on_loading(&block)
       @blocks[:loading] = block if block_given?
-    end
-
-    # Sets the success state content block
-    #
-    # @yield [*values] Block that renders success state content
-    # @yieldparam values [Array] Values from the resolved promises
-    # @return [void]
-    # @example
-    #   handler.on_success do |user, posts|
-    #     render partial: "user_dashboard", locals: { user: user, posts: posts }
-    #   end
-    def on_success(&block)
-      @blocks[:success] = block if block_given?
+      self
     end
 
     # Sets the failure state content block
@@ -61,6 +55,12 @@ module TurboFrameAsync
     #   end
     def on_failure(&block)
       @blocks[:failure] = block if block_given?
+      self
+    end
+
+    def on_success(block)
+      @blocks[:success] = block
+      self
     end
 
     # Processes the given promises and handles their resolution/rejection
@@ -70,16 +70,24 @@ module TurboFrameAsync
     # @api private
     def handle_promises(promises)
       return if promises.empty?
+      executor = TurboFrameAsync.configuration.executor
 
       # Wait promises
       Concurrent::Promises
-        .zip(*promises)
-        .then_on(TurboFrameAsync.configuration.executor) { |*values| broadcast_success(values) }
-        .rescue_on(TurboFrameAsync.configuration.executor) do |error|
-          Rails.error.report(error)
-          broadcast_failure(error)
+        .zip_futures_on(executor, *promises)
+        .then_on(executor) { |*values| broadcast_success(values) }
+        .rescue_on(executor) do
+          # for some reasons zipped future does not inject any error object into rescue/rescue_on block
+          # so we need to iterate through promises and find out the reasons of their failure
+          errors = promises.filter(&:rejected?)&.map(&:reason)
+
+          errors.each do |error|
+            Rails.error.report(error)
+          end
+
+          broadcast_failure(errors)
         end
-    rescue StandardError => e
+    rescue => e
       Rails.error.report(e)
       broadcast_failure(e)
     end
@@ -92,6 +100,14 @@ module TurboFrameAsync
       render_block(@blocks[:loading])
     end
 
+    # This method is being called when instance of the handler is being rendered in template
+    def to_s
+      output = ActiveSupport::SafeBuffer.new
+      output << @view_context.turbo_stream_from(async_tag_id)
+      output << @view_context.turbo_frame_tag(@dom_id) { render_loading }
+      output
+    end
+
     private
 
     # Returns the default content blocks for each state
@@ -100,9 +116,9 @@ module TurboFrameAsync
     # @api private
     def default_blocks
       {
-        loading: -> { content_tag(:div, "Loading...") },
-        success: ->(*) { content_tag(:div, "Content loaded!") },
-        failure: ->(*) { content_tag(:div, "Error loading content") }
+        loading: -> { content_tag(:div, "Default block -> Loading...") },
+        success: ->(*) { content_tag(:div, "Default block -> Content loaded!") },
+        failure: ->(*) { content_tag(:div, "Default block -> Error loading content") }
       }
     end
 
@@ -120,13 +136,13 @@ module TurboFrameAsync
 
     # Broadcasts failure content to the Turbo Stream
     #
-    # @param error [StandardError] The error from rejected promise
+    # @param errors [StandardError] The error from rejected promise
     # @return [void]
     # @api private
-    def broadcast_failure(error)
+    def broadcast_failure(errors)
       return unless @blocks[:failure]
 
-      html_content = render_block(@blocks[:failure], error)
+      html_content = render_block(@blocks[:failure], errors)
       broadcast_content(html_content)
     end
 
